@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowUpDown, GripVertical } from 'lucide-react';
+import { twMerge } from 'tailwind-merge';
 
 const GOOGLE_FONTS = [
   "Playfair Display", "Inter", "Roboto", "Open Sans", "Lato", "Montserrat",
@@ -17,6 +19,7 @@ export default function AdminClient() {
   const [files, setFiles] = useState<FileList | null>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Edit states
@@ -79,6 +82,31 @@ export default function AdminClient() {
         alert('Upload completely failed.');
     };
     xhr.send(formData);
+  };
+
+  const [uploadingMusic, setUploadingMusic] = useState(false);
+  const handleMusicUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingMusic(true);
+    const fd = new FormData();
+    fd.append('music', file);
+    const res = await fetch(`http://localhost:4001/api/admin/clients/${id}/music`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` },
+      body: fd
+    });
+    setUploadingMusic(false);
+    if (res.ok) window.location.reload();
+  };
+
+  const handleMusicRemove = async () => {
+    if (!confirm('Remove music?')) return;
+    await fetch(`http://localhost:4001/api/admin/clients/${id}/music`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+    });
+    window.location.reload();
   };
 
   const handleDelete = async (photoId: string) => {
@@ -252,13 +280,92 @@ export default function AdminClient() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {client.photos?.map((p: any) => (
-          <div key={p.id} className="relative group border border-[#e3e1e1] aspect-square">
-            <img src={`http://localhost:4001${p.thumbnailUrl}`} className="w-full h-full object-cover" />
-            <button onClick={() => handleDelete(p.id)} className="absolute top-2 right-2 bg-white text-black p-1 text-xs tracking-widest uppercase font-bold opacity-0 group-hover:opacity-100 border border-[#e3e1e1] hover:bg-[#faf9f8]">Delete</button>
+      <div className="brutalist-card">
+        <h2 className="brutalist-label mb-4">Background Music</h2>
+        {client.musicUrl ? (
+          <div className="flex items-center gap-4">
+            <audio src={`http://localhost:4001/${client.musicUrl}`} controls className="h-[44px]" />
+            <button onClick={handleMusicRemove} className="brutalist-button-outline text-red-600 border-red-200">Remove Music</button>
           </div>
-        ))}
+        ) : (
+          <div>
+            <label className="brutalist-button inline-block cursor-pointer text-center w-auto">
+              {uploadingMusic ? 'Uploading...' : 'Upload MP3'}
+              <input type="file" accept="audio/mpeg, audio/mp3" className="hidden" onChange={handleMusicUpload} />
+            </label>
+          </div>
+        )}
+      </div>
+
+      <div className="brutalist-card mb-8">
+        <div className="flex items-center justify-between mb-4">
+            <h2 className="brutalist-label">Photo Order & Management</h2>
+            <div className="flex gap-4">
+                <button 
+                    onClick={async () => {
+                        const sorted = [...client.photos].sort((a: any, b: any) => {
+                            const nameA = a.originalUrl.split('-orig-')[1] || '';
+                            const nameB = b.originalUrl.split('-orig-')[1] || '';
+                            // Try numeric sort first if they are numbers like 1.jpg, 2.jpg
+                            const numA = parseInt(nameA);
+                            const numB = parseInt(nameB);
+                            if (!isNaN(numA) && !isNaN(numB) && numA !== numB) return numA - numB;
+                            return nameA.localeCompare(nameB);
+                        });
+                        setClient({ ...client, photos: sorted });
+                        await fetch(`http://localhost:4001/api/admin/clients/${id}/photos/reorder`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('adminToken')}` },
+                            body: JSON.stringify({ orderedIds: sorted.map((p: any) => p.id) })
+                        });
+                    }}
+                    className="brutalist-button-outline h-8 px-4 flex items-center gap-2"
+                >
+                    <ArrowUpDown size={14} /> Sort A-Z
+                </button>
+            </div>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {client.photos?.map((p: any, idx: number) => (
+            <div 
+                key={p.id} 
+                draggable 
+                onDragStart={() => setDraggedIdx(idx)}
+                onDragEnter={(e) => {
+                    e.preventDefault();
+                    if (draggedIdx === null || draggedIdx === idx) return;
+                    const newPhotos = [...client.photos];
+                    const draggedItem = newPhotos[draggedIdx];
+                    newPhotos.splice(draggedIdx, 1);
+                    newPhotos.splice(idx, 0, draggedItem);
+                    setClient({ ...client, photos: newPhotos });
+                    setDraggedIdx(idx);
+                }}
+                onDragEnd={async () => {
+                    setDraggedIdx(null);
+                    const orderedIds = client.photos.map((ph: any) => ph.id);
+                    await fetch(`http://localhost:4001/api/admin/clients/${id}/photos/reorder`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('adminToken')}` },
+                        body: JSON.stringify({ orderedIds })
+                    });
+                }}
+                onDragOver={(e) => e.preventDefault()}
+                className={twMerge(
+                    "relative group border aspect-square bg-[#faf9f8] cursor-move transition-transform", 
+                    draggedIdx === idx ? "opacity-50 scale-95 border-taupe" : "border-[#e3e1e1]"
+                )}
+            >
+                <div className="absolute top-2 left-2 z-10 bg-white/80 p-1 text-[#796e68] shadow-sm"><GripVertical size={16} /></div>
+                <img src={`http://localhost:4001${p.thumbnailUrl}`} className="w-full h-full object-cover pointer-events-none" />
+                <button onClick={() => handleDelete(p.id)} className="absolute top-2 right-2 bg-white text-black p-1 text-xs tracking-widest uppercase font-bold opacity-0 group-hover:opacity-100 border border-[#e3e1e1] hover:bg-[#faf9f8] z-20">Delete</button>
+                <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] truncate px-2 py-1 tracking-widest opacity-0 group-hover:opacity-100">
+                    {p.originalUrl.split('-orig-')[1]}
+                </div>
+            </div>
+            ))}
+        </div>
       </div>
     </div>
   );

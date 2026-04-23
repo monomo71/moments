@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, ChevronLeft, ChevronRight, Pause, Play, Download, CheckSquare, Square, Grid } from 'lucide-react';
-import clsx from 'clsx';
+import { X, ChevronLeft, ChevronRight, Pause, Play, Download, CheckSquare, Square, Grid, Volume2, VolumeX } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
 
 const i18n = {
@@ -19,6 +18,8 @@ export default function ClientGallery() {
   const [thumbSize, setThumbSize] = useState(300);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showControls, setShowControls] = useState(true);
+  const [audioVolume, setAudioVolume] = useState(0.5);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   const navigate = useNavigate();
   const t = i18n[lang];
@@ -51,10 +52,25 @@ export default function ClientGallery() {
 
   useEffect(() => {
     if (mode === 'slideshow' && isPlaying) {
+      if (audioRef.current) {
+        audioRef.current.play().catch(e => console.error("Audio play failed:", e));
+      }
       const t = setInterval(nextPhoto, 4000);
-      return () => clearInterval(t);
+      return () => {
+        clearInterval(t);
+      };
+    } else {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
     }
   }, [mode, isPlaying, nextPhoto]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = audioVolume;
+    }
+  }, [audioVolume]);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -96,99 +112,133 @@ export default function ClientGallery() {
 
   if (!client) return null;
 
-  if (mode === 'welcome') return (
-    <div className="min-h-screen flex items-center justify-center p-8 transition-colors duration-1000" style={{ backgroundColor: client.backgroundColor }}>
-      <div className="text-center max-w-2xl">
-        <h1 className="text-4xl md:text-6xl font-serif mb-4" style={{ color: client.accentColor, fontFamily: client.fontFamily }}>{client.title}</h1>
-        {client.subtitle && <h2 className="text-xl md:text-2xl font-serif text-foreground-muted mb-8 tracking-widest uppercase">{client.subtitle}</h2>}
-        {client.date && <p className="text-sm font-bold tracking-widest uppercase text-foreground-muted mb-12">{new Date(client.date).toLocaleDateString()}</p>}
-        
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <button onClick={() => setMode('gallery')} className="brutalist-button" style={{ backgroundColor: client.accentColor }}>{t.enterG}</button>
-          <button onClick={() => setMode('slideshow')} className="brutalist-button-outline">{t.playS}</button>
-        </div>
-      </div>
-    </div>
-  );
-
-  const PhotosViewer = () => (
-    <div className="fixed inset-0 z-50 bg-black flex items-center justify-center" onMouseMove={handleMouseMove}>
-      <div className={twMerge("absolute inset-0 transition-opacity duration-500", showControls ? "opacity-100" : "opacity-0")}>
-        <div className="absolute top-0 left-0 right-0 p-6 flex justify-between bg-gradient-to-b from-black/50 to-transparent">
-          <button onClick={() => { setMode('gallery'); setIsPlaying(false); }} className="text-white hover:text-gray-300 w-12 h-12 flex items-center justify-center"><X size={32}/></button>
-          {mode === 'slideshow' && (
-            <button onClick={() => setIsPlaying(!isPlaying)} className="text-white hover:text-gray-300 w-12 h-12 flex items-center justify-center">{isPlaying ? <Pause size={32}/> : <Play size={32}/>}</button>
-          )}
-        </div>
-        
-        <button onClick={prevPhoto} className="absolute left-6 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 w-16 h-16 flex items-center justify-center"><ChevronLeft size={48}/></button>
-        <button onClick={nextPhoto} className="absolute right-6 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 w-16 h-16 flex items-center justify-center"><ChevronRight size={48}/></button>
-      </div>
-      
-      <img src={`http://localhost:4001${client.photos[currentIdx]?.originalUrl}`} className="max-h-screen max-w-full object-contain" />
-    </div>
-  );
-
   return (
-    <div className="min-h-screen" style={{ backgroundColor: client.backgroundColor }}>
-      {(mode === 'slideshow' || mode === 'lightbox') && <PhotosViewer />}
+    <>
+      <audio 
+        src={client?.musicUrl ? `http://localhost:4001/${client.musicUrl}` : undefined} 
+        loop 
+        ref={audioRef}
+        preload="auto"
+      />
       
-      {mode === 'gallery' && (
-        <>
-          <nav className="sticky top-0 z-40 border-b border-border px-8 pt-4 pb-0 h-auto sm:h-16 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 box-border" style={{ backgroundColor: client.headerColor || '#ffffff', color: client.headerTextColor || '#000000', fontFamily: client.headerFontFamily || 'Playfair Display' }}>
-            <h1 className="text-xl cursor-pointer" style={{ fontFamily: client.headerFontFamily || 'Playfair Display' }} onClick={() => setMode('welcome')}>{client.title}</h1>
+      {mode === 'welcome' && (
+        <div className="min-h-screen flex items-center justify-center p-8 transition-colors duration-1000" style={{ backgroundColor: client.backgroundColor }}>
+          <div className="text-center max-w-2xl">
+            <h1 className="text-4xl md:text-6xl font-serif mb-4" style={{ color: client.accentColor, fontFamily: client.fontFamily }}>{client.title}</h1>
+            {client.subtitle && <h2 className="text-xl md:text-2xl font-serif text-foreground-muted mb-8 tracking-widest uppercase">{client.subtitle}</h2>}
+            {client.date && <p className="text-sm font-bold tracking-widest uppercase text-foreground-muted mb-12">{new Date(client.date).toLocaleDateString()}</p>}
             
-            <div className="flex flex-wrap items-center gap-4 text-[10px] tracking-widest font-bold uppercase mb-4 sm:mb-0">
-              <div className="flex items-center gap-2 border-r border-[#e3e1e1] pr-4">
-                <Grid size={14}/>
-                <input type="range" min="150" max="600" value={thumbSize} onChange={e => setThumbSize(Number(e.target.value))} className="w-24 accent-taupe" />
-              </div>
-              
-              <button 
-                onClick={() => downloadZip(selected.size > 0 ? Array.from(selected) : undefined)} 
-                className="flex items-center gap-2 text-foreground-muted hover:text-foreground transition-colors"
-              >
-                <Download size={14}/> {selected.size > 0 ? t.dlSel : t.dlAll}
-              </button>
-              
-              <select value={lang} onChange={e => setLang(e.target.value as any)} className="bg-transparent border border-border p-1 rounded-none outline-none focus:ring-1 focus:border-taupe h-8">
-                <option value="nl">NL</option>
-                <option value="en">EN</option>
-                <option value="de">DE</option>
-              </select>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <button onClick={() => setMode('gallery')} className="brutalist-button" style={{ backgroundColor: client.accentColor }}>{t.enterG}</button>
+              <button onClick={() => { 
+                setMode('slideshow'); 
+                setIsPlaying(true); 
+                if (audioRef.current) audioRef.current.play().catch(e => console.error("Audio block:", e)); 
+              }} className="brutalist-button-outline">{t.playS}</button>
             </div>
-          </nav>
+          </div>
+        </div>
+      )}
 
-          <main className="p-8">
-            <div className="masonry-grid" style={{ columnWidth: `${Math.max(150, thumbSize)}px`, columnGap: '1rem' }}>
-              {client.photos?.map((p: any, idx: number) => {
-                const isSelected = selected.has(p.id);
-                return (
-                  <div key={p.id} className={twMerge("relative group mb-4 inline-block w-full cursor-zoom-in transition-all", isSelected ? "ring-4 ring-taupe" : "")}>
-                    <img src={`http://localhost:4001${p.thumbnailUrl}`} loading="lazy" className="w-full h-auto block" onClick={() => { setCurrentIdx(idx); setMode('lightbox'); }} />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors pointer-events-none" />
-                    
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2">
-                      <button onClick={(e) => {
-                        e.stopPropagation();
-                        const next = new Set(selected);
-                        if (next.has(p.id)) next.delete(p.id); else next.add(p.id);
-                        setSelected(next);
-                      }} className="bg-white/90 text-black p-2 hover:bg-white box-border rounded-none shadow-none focus:outline-none">
-                        {isSelected ? <CheckSquare size={16}/> : <Square size={16} />}
-                      </button>
-                      <button onClick={(e) => { e.stopPropagation(); downloadOriginal(p); }} className="bg-white/90 text-black p-2 hover:bg-white box-border rounded-none shadow-none focus:outline-none" title="Download High-Res">
-                        <Download size={16}/>
+      {mode !== 'welcome' && (
+        <div className="min-h-screen" style={{ backgroundColor: client.backgroundColor }}>
+          {(mode === 'slideshow' || mode === 'lightbox') && (
+            <div className="fixed inset-0 z-50 bg-black flex items-center justify-center" onMouseMove={handleMouseMove}>
+              <div className={twMerge("absolute inset-0 transition-opacity duration-500", showControls ? "opacity-100" : "opacity-0")}>
+                <div className="absolute top-0 left-0 right-0 p-6 flex justify-between bg-gradient-to-b from-black/50 to-transparent">
+                  <button onClick={() => { setMode('gallery'); setIsPlaying(false); audioRef.current?.pause(); }} className="text-white hover:text-gray-300 w-12 h-12 flex items-center justify-center"><X size={32}/></button>
+                  
+                  {mode === 'slideshow' && (
+                    <div className="flex items-center gap-6">
+                      {client.musicUrl && (
+                        <div className="flex items-center gap-3 text-white">
+                          <button onClick={() => setAudioVolume(audioVolume > 0 ? 0 : 0.5)}>
+                            {audioVolume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                          </button>
+                          <input type="range" min="0" max="1" step="0.05" value={audioVolume} onChange={e => setAudioVolume(parseFloat(e.target.value))} className="w-24 accent-[#796e68]" />
+                        </div>
+                      )}
+                      <button onClick={() => {
+                        const nextIsPlaying = !isPlaying;
+                        setIsPlaying(nextIsPlaying);
+                        if (nextIsPlaying) {
+                           audioRef.current?.play().catch(e => console.error(e));
+                        } else {
+                           audioRef.current?.pause();
+                        }
+                      }} className="text-white hover:text-gray-300 w-12 h-12 flex items-center justify-center">
+                        {isPlaying ? <Pause size={32}/> : <Play size={32}/>}
                       </button>
                     </div>
-                  </div>
-                );
-              })}
+                  )}
+                </div>
+                
+                <button onClick={prevPhoto} className="absolute left-6 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 w-16 h-16 flex items-center justify-center"><ChevronLeft size={48}/></button>
+                <button onClick={nextPhoto} className="absolute right-6 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 w-16 h-16 flex items-center justify-center"><ChevronRight size={48}/></button>
+              </div>
+              
+              <img src={`http://localhost:4001${client.photos[currentIdx]?.originalUrl}`} className="max-h-screen max-w-full object-contain" />
             </div>
-            {client.photos?.length === 0 && <div className="text-center font-bold tracking-widest text-[10px] uppercase text-foreground-muted py-24 border border-dashed border-border">No photos available yet.</div>}
-          </main>
-        </>
+          )}
+          
+          {mode === 'gallery' && (
+            <>
+              <nav className="sticky top-0 z-40 border-b border-border px-8 pt-4 pb-0 h-auto sm:h-16 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 box-border" style={{ backgroundColor: client.headerColor || '#ffffff', color: client.headerTextColor || '#000000', fontFamily: client.headerFontFamily || 'Playfair Display' }}>
+                <h1 className="text-xl cursor-pointer" style={{ fontFamily: client.headerFontFamily || 'Playfair Display' }} onClick={() => setMode('welcome')}>{client.title}</h1>
+                
+                <div className="flex flex-wrap items-center gap-4 text-[10px] tracking-widest font-bold uppercase mb-4 sm:mb-0">
+                  <div className="flex items-center gap-2 border-r border-[#e3e1e1] pr-4">
+                    <Grid size={14}/>
+                    <input type="range" min="150" max="600" value={thumbSize} onChange={e => setThumbSize(Number(e.target.value))} className="w-24 accent-taupe" />
+                  </div>
+                  
+                  <button 
+                    onClick={() => downloadZip(selected.size > 0 ? Array.from(selected) : undefined)} 
+                    className="flex items-center gap-2 text-foreground-muted hover:text-foreground transition-colors"
+                  >
+                    <Download size={14}/> {selected.size > 0 ? t.dlSel : t.dlAll}
+                  </button>
+                  
+                  <select value={lang} onChange={e => setLang(e.target.value as any)} className="bg-transparent border border-border p-1 rounded-none outline-none focus:ring-1 focus:border-taupe h-8">
+                    <option value="nl">NL</option>
+                    <option value="en">EN</option>
+                    <option value="de">DE</option>
+                  </select>
+                </div>
+              </nav>
+
+              <main className="p-8">
+                <div className="masonry-grid" style={{ columnWidth: `${Math.max(150, thumbSize)}px`, columnGap: '1rem' }}>
+                  {client.photos?.map((p: any, idx: number) => {
+                    const isSelected = selected.has(p.id);
+                    return (
+                      <div key={p.id} className={twMerge("relative group mb-4 inline-block w-full cursor-zoom-in transition-all", isSelected ? "ring-4 ring-taupe" : "")}>
+                        <img src={`http://localhost:4001${p.thumbnailUrl}`} loading="lazy" className="w-full h-auto block" onClick={() => { setCurrentIdx(idx); setMode('lightbox'); }} />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors pointer-events-none" />
+                        
+                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2">
+                          <button onClick={(e) => {
+                            e.stopPropagation();
+                            const next = new Set(selected);
+                            if (next.has(p.id)) next.delete(p.id); else next.add(p.id);
+                            setSelected(next);
+                          }} className="bg-white/90 text-black p-2 hover:bg-white box-border rounded-none shadow-none focus:outline-none">
+                            {isSelected ? <CheckSquare size={16}/> : <Square size={16} />}
+                          </button>
+                          <button onClick={(e) => { e.stopPropagation(); downloadOriginal(p); }} className="bg-white/90 text-black p-2 hover:bg-white box-border rounded-none shadow-none focus:outline-none" title="Download High-Res">
+                            <Download size={16}/>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {client.photos?.length === 0 && <div className="text-center font-bold tracking-widest text-[10px] uppercase text-foreground-muted py-24 border border-dashed border-border">No photos available yet.</div>}
+              </main>
+            </>
+          )}
+        </div>
       )}
-    </div>
+    </>
   );
 }

@@ -4,6 +4,9 @@ import { useNavigate } from 'react-router-dom';
 export default function AdminDashboard() {
   const [clients, setClients] = useState([]);
   const [creating, setCreating] = useState(false);
+  const [changingPass, setChangingPass] = useState(false);
+  const [newAdminPassword, setNewAdminPassword] = useState('');
+  
   const [newClient, setNewClient] = useState({ title: '', subtitle: '', password: '', date: '', accentColor: '#796e68', backgroundColor: '#f3f1f1', fontFamily: 'Playfair Display' });
   const navigate = useNavigate();
 
@@ -35,12 +38,46 @@ export default function AdminDashboard() {
     window.location.reload();
   };
 
+  const handleChangePassword = async () => {
+    if (!newAdminPassword) return alert('Enter a new password');
+    const res = await fetch('http://localhost:4001/api/admin/password', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('adminToken')}` },
+      body: JSON.stringify({ newPassword: newAdminPassword })
+    });
+    if (res.ok) {
+      alert('Admin password updated successfully');
+      setChangingPass(false);
+      setNewAdminPassword('');
+    } else {
+      alert('Failed to update password');
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto p-8 space-y-8">
-      <div className="flex justify-between items-center border-b border-border pb-4">
-        <h1 className="text-3xl font-serif text-taupe font-bold tracking-widest uppercase">Moments Admin</h1>
-        <button onClick={() => { localStorage.removeItem('adminToken'); navigate('/admin/login'); }} className="brutalist-button-outline">Logout</button>
+      <div className="flex justify-between items-center border-b border-[#e3e1e1] pb-4">
+        <h1 className="text-3xl font-serif text-[#796e68] font-bold tracking-widest uppercase">Moments Admin</h1>
+        <div className="flex gap-4">
+          <button onClick={() => setChangingPass(!changingPass)} className="brutalist-button-outline">
+            {changingPass ? 'Cancel' : 'Change Admin Password'}
+          </button>
+          <button onClick={() => { localStorage.removeItem('adminToken'); navigate('/admin/login'); }} className="brutalist-button-outline">Logout</button>
+        </div>
       </div>
+
+      {changingPass && (
+        <div className="brutalist-card bg-[#faf9f8] mb-8">
+          <h2 className="brutalist-label mb-4">Change Admin Password</h2>
+          <div className="flex gap-4 items-end">
+            <div className="flex-1">
+              <label className="brutalist-label">New Password</label>
+              <input type="password" value={newAdminPassword} onChange={e => setNewAdminPassword(e.target.value)} className="brutalist-input" />
+            </div>
+            <button onClick={handleChangePassword} className="brutalist-button">Update Password</button>
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-between items-center">
         <h2 className="text-xl tracking-widest font-bold uppercase text-foreground-muted">Clients</h2>
