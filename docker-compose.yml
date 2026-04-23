@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ./backend
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./backend/dev.db:/app/dev.db
+    environment:
+      - PORT=3001
+      - DATABASE_URL=file:./dev.db
+      - JWT_SECRET=supersecret
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"

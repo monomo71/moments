@@ -1,0 +1,22 @@
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Build
+frontend/dist/
+backend/dist/
+
+# Env
+.env
+.env.local
+
+# Database
+backend/dev.db
+backend/dev.db-journal
+
+# Uploads
+uploads/
+
+# OS
+.DS_Store

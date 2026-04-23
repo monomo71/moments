@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-taupe: #796e68;
+  --color-taupe-hover: #685c56;
+  --color-background: #f3f1f1;
+  --color-background-alt: #eceaea;
+  --color-background-hover: #faf9f8;
+  --color-surface: #ffffff;
+  --color-surface-hover: #faf9f8;
+  --color-border: #e3e1e1;
+  --color-border-dark: #d3d1d1;
+  --color-foreground: #000000;
+  --color-foreground-muted: #796e68;
+  
+  --font-sans: "Inter", sans-serif;
+  --font-serif: "Playfair Display", serif;
+  
+  --text-tiny: 9px;
+  --text-mini: 10px;
+  
+  --tracking-widest: 0.15em;
+  --tracking-ultra: 0.2em;
+
+  --radius-none: 0;
+  --radius-sm: 0;
+  --radius: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
+  --radius-3xl: 0;
+  --radius-full: 0;
+
+  --shadow-none: none;
+  --shadow-sm: none;
+  --shadow: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: none;
+  --shadow-2xl: none;
+  --shadow-inner: none;
+}
+
+@layer base {
+  :root {
+    --background: #f3f1f1;
+    --foreground: #000000;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    @apply font-sans antialiased;
+  }
+}
+
+@layer components {
+  .brutalist-input {
+    @apply min-h-[44px] bg-white border border-border box-border rounded-none shadow-none focus:outline-none focus:ring-1 focus:ring-taupe focus:border-taupe px-3 py-2 text-sm font-medium w-full;
+  }
+
+  .brutalist-button {
+    @apply inline-flex items-center justify-center bg-taupe text-white h-[44px] px-6 uppercase tracking-widest text-[10px] font-bold rounded-none shadow-none transition-colors hover:bg-taupe-hover focus:outline-none focus:ring-1 focus:ring-taupe focus:ring-offset-1 focus:ring-offset-background;
+  }
+
+  .brutalist-button-outline {
+    @apply inline-flex items-center justify-center bg-transparent border border-border text-foreground hover:bg-border hover:text-foreground h-[44px] px-6 uppercase tracking-widest text-[10px] font-bold rounded-none shadow-none transition-colors focus:outline-none;
+  }
+
+  .brutalist-label {
+    @apply block uppercase tracking-widest text-[10px] font-bold text-foreground-muted mb-1;
+  }
+
+  .brutalist-card {
+    @apply bg-surface border border-border rounded-none shadow-none box-border p-6;
+  }
+}

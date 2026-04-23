@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id       String @id @default(uuid())
+  username String @unique
+  password String
+}
+
+model Client {
+  id              String   @id @default(uuid())
+  password        String   @unique
+  title           String
+  subtitle        String?
+  date            DateTime?
+  accentColor     String?
+  backgroundColor String?
+  fontFamily      String?  @default("Playfair Display")
+  headerFontFamily String?  @default("Playfair Display")
+  headerColor      String?  @default("#ffffff")
+  headerTextColor  String?  @default("#000000")
+
+  photos          Photo[]
+  createdAt       DateTime @default(now())
+}
+
+model Photo {
+  id          String   @id @default(uuid())
+  originalUrl String
+  thumbnailUrl String
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
