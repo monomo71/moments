@@ -52,7 +52,7 @@ services:
   frontend:
     build: https://github.com/monomo71/moments.git#main:frontend
     ports:
-      - "80:80"
+      - "3002:80"
 
 volumes:
   moments_uploads:
