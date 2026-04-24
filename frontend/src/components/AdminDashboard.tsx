@@ -11,7 +11,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('http://localhost:4001/api/admin/clients', {
+    fetch('/api/admin/clients', {
       headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
     }).then(res => {
       if (!res.ok) navigate('/admin/login');
@@ -20,7 +20,7 @@ export default function AdminDashboard() {
   }, [navigate]);
 
   const handleCreate = async () => {
-    const res = await fetch('http://localhost:4001/api/admin/clients', {
+    const res = await fetch('/api/admin/clients', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('adminToken')}` },
       body: JSON.stringify(newClient)
@@ -31,7 +31,7 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async (id: string) => {
-    await fetch(`http://localhost:4001/api/admin/clients/${id}`, {
+    await fetch(`/api/admin/clients/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
     });
@@ -40,7 +40,7 @@ export default function AdminDashboard() {
 
   const handleChangePassword = async () => {
     if (!newAdminPassword) return alert('Enter a new password');
-    const res = await fetch('http://localhost:4001/api/admin/password', {
+    const res = await fetch('/api/admin/password', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('adminToken')}` },
       body: JSON.stringify({ newPassword: newAdminPassword })

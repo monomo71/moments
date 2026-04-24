@@ -33,7 +33,7 @@ export default function AdminClient() {
   const [uploadingBg, setUploadingBg] = useState(false);
 
   useEffect(() => {
-    fetch(`http://localhost:4001/api/admin/clients`, {
+    fetch(`/api/admin/clients`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
     }).then(res => res.json()).then(data => {
       const c = data.find((x: any) => x.id === id);
@@ -73,7 +73,7 @@ export default function AdminClient() {
     }
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `http://localhost:4001/api/admin/clients/${id}/photos`);
+    xhr.open('POST', `/api/admin/clients/${id}/photos`);
     xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('adminToken')}`);
     
     xhr.upload.onprogress = (e) => {
@@ -103,7 +103,7 @@ export default function AdminClient() {
     setUploadingMusic(true);
     const fd = new FormData();
     fd.append('music', file);
-    const res = await fetch(`http://localhost:4001/api/admin/clients/${id}/music`, {
+    const res = await fetch(`/api/admin/clients/${id}/music`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` },
       body: fd
@@ -114,7 +114,7 @@ export default function AdminClient() {
 
   const handleMusicRemove = async () => {
     if (!confirm('Remove music?')) return;
-    await fetch(`http://localhost:4001/api/admin/clients/${id}/music`, {
+    await fetch(`/api/admin/clients/${id}/music`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
     });
@@ -122,7 +122,7 @@ export default function AdminClient() {
   };
 
   const handleDelete = async (photoId: string) => {
-    await fetch(`http://localhost:4001/api/admin/photos/${photoId}`, {
+    await fetch(`/api/admin/photos/${photoId}`, {
       method: 'DELETE', headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
     });
     window.location.reload();
@@ -135,7 +135,7 @@ export default function AdminClient() {
     const fd = new FormData();
     fd.append('bgimage', file);
     try {
-      const r = await fetch(`http://localhost:4001/api/admin/clients/${id}/bgimage`, {
+      const r = await fetch(`/api/admin/clients/${id}/bgimage`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` },
         body: fd
@@ -148,7 +148,7 @@ export default function AdminClient() {
   };
 
   const handleBgRemove = async () => {
-    await fetch(`http://localhost:4001/api/admin/clients/${id}/bgimage`, {
+    await fetch(`/api/admin/clients/${id}/bgimage`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
     });
@@ -156,7 +156,7 @@ export default function AdminClient() {
   };
 
   const handleSaveEdit = async () => {
-    const res = await fetch(`http://localhost:4001/api/admin/clients/${id}`, {
+    const res = await fetch(`/api/admin/clients/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('adminToken')}` },
       body: JSON.stringify(editData)
@@ -310,7 +310,7 @@ export default function AdminClient() {
                   {client.bgImageUrl ? (
                     <div className="flex flex-col gap-4">
                       <div className="w-48 h-32 bg-gray-200 border border-[#e3e1e1] relative">
-                         <img src={`http://localhost:4001/${client.bgImageUrl}`} className="w-full h-full object-cover" />
+                         <img src={`/${client.bgImageUrl}`} className="w-full h-full object-cover" />
                       </div>
                       <button onClick={handleBgRemove} className="brutalist-button-outline w-fit text-red-600 border-red-200">Remove Image</button>
                     </div>
@@ -387,7 +387,7 @@ export default function AdminClient() {
         <h2 className="brutalist-label mb-4">Background Music</h2>
         {client.musicUrl ? (
           <div className="flex items-center gap-4">
-            <audio src={`http://localhost:4001/${client.musicUrl}`} controls className="h-[44px]" />
+            <audio src={`/${client.musicUrl}`} controls className="h-[44px]" />
             <button onClick={handleMusicRemove} className="brutalist-button-outline text-red-600 border-red-200">Remove Music</button>
           </div>
         ) : (
@@ -416,7 +416,7 @@ export default function AdminClient() {
                             return nameA.localeCompare(nameB);
                         });
                         setClient({ ...client, photos: sorted });
-                        await fetch(`http://localhost:4001/api/admin/clients/${id}/photos/reorder`, {
+                        await fetch(`/api/admin/clients/${id}/photos/reorder`, {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('adminToken')}` },
                             body: JSON.stringify({ orderedIds: sorted.map((p: any) => p.id) })
@@ -448,7 +448,7 @@ export default function AdminClient() {
                 onDragEnd={async () => {
                     setDraggedIdx(null);
                     const orderedIds = client.photos.map((ph: any) => ph.id);
-                    await fetch(`http://localhost:4001/api/admin/clients/${id}/photos/reorder`, {
+                    await fetch(`/api/admin/clients/${id}/photos/reorder`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('adminToken')}` },
                         body: JSON.stringify({ orderedIds })
@@ -461,7 +461,7 @@ export default function AdminClient() {
                 )}
             >
                 <div className="absolute top-2 left-2 z-10 bg-white/80 p-1 text-[#796e68] shadow-sm"><GripVertical size={16} /></div>
-                <img src={`http://localhost:4001${p.thumbnailUrl}`} className="w-full h-full object-cover pointer-events-none" />
+                <img src={`${p.thumbnailUrl}`} className="w-full h-full object-cover pointer-events-none" />
                 <button onClick={() => handleDelete(p.id)} className="absolute top-2 right-2 bg-white text-black p-1 text-xs tracking-widest uppercase font-bold opacity-0 group-hover:opacity-100 border border-[#e3e1e1] hover:bg-[#faf9f8] z-20">Delete</button>
                 <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] truncate px-2 py-1 tracking-widest opacity-0 group-hover:opacity-100">
                     {p.originalUrl.split('-orig-')[1]}

@@ -25,7 +25,7 @@ export default function ClientGallery() {
   const t = i18n[lang];
 
   useEffect(() => {
-    fetch('http://localhost:4001/api/client/me', { headers: { Authorization: `Bearer ${localStorage.getItem('clientToken')}` } })
+    fetch('/api/client/me', { headers: { Authorization: `Bearer ${localStorage.getItem('clientToken')}` } })
       .then(r => r.ok ? r.json() : navigate('/client/login'))
       .then(setClient);
   }, [navigate]);
@@ -86,7 +86,7 @@ export default function ClientGallery() {
 
   const downloadZip = (ids?: string[]) => {
     const token = localStorage.getItem('clientToken');
-    let url = 'http://localhost:4001/api/client/download';
+    let url = '/api/client/download';
     if (ids && ids.length) url += '?ids=' + ids.join(',');
     
     fetch(url, { headers: { Authorization: `Bearer ${token}` } })
@@ -103,7 +103,7 @@ export default function ClientGallery() {
 
   const downloadOriginal = (photo: any) => {
     const a = document.createElement('a');
-    a.href = `http://localhost:4001${photo.originalUrl}`;
+    a.href = `${photo.originalUrl}`;
     a.download = photo.originalUrl.split('/').pop();
     document.body.appendChild(a);
     a.click();
@@ -115,7 +115,7 @@ export default function ClientGallery() {
   return (
     <>
       <audio 
-        src={client?.musicUrl ? `http://localhost:4001/${client.musicUrl}` : undefined} 
+        src={client?.musicUrl ? `/${client.musicUrl}` : undefined} 
         loop 
         ref={audioRef}
         preload="auto"
@@ -126,7 +126,7 @@ export default function ClientGallery() {
           {client.bgImageUrl && (
              <div 
                className="absolute inset-0 z-0 bg-cover bg-center" 
-               style={{ backgroundImage: `url(http://localhost:4001/${client.bgImageUrl})` }} 
+               style={{ backgroundImage: `url(/${client.bgImageUrl})` }} 
              />
           )}
           {client.bgImageUrl && client.overlayColor && (
@@ -209,7 +209,7 @@ export default function ClientGallery() {
                 <button onClick={nextPhoto} className="absolute right-6 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 w-16 h-16 flex items-center justify-center"><ChevronRight size={48}/></button>
               </div>
               
-              <img src={`http://localhost:4001${client.photos[currentIdx]?.originalUrl}`} className="max-h-screen max-w-full object-contain" />
+              <img src={`${client.photos[currentIdx]?.originalUrl}`} className="max-h-screen max-w-full object-contain" />
             </div>
           )}
           
@@ -245,7 +245,7 @@ export default function ClientGallery() {
                     const isSelected = selected.has(p.id);
                     return (
                       <div key={p.id} className={twMerge("relative group mb-4 inline-block w-full cursor-zoom-in transition-all", isSelected ? "ring-4 ring-taupe" : "")}>
-                        <img src={`http://localhost:4001${p.thumbnailUrl}`} loading="lazy" className="w-full h-auto block" onClick={() => { setCurrentIdx(idx); setMode('lightbox'); }} />
+                        <img src={`${p.thumbnailUrl}`} loading="lazy" className="w-full h-auto block" onClick={() => { setCurrentIdx(idx); setMode('lightbox'); }} />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors pointer-events-none" />
                         
                         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2">
