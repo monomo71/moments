@@ -110,7 +110,7 @@ app.post('/api/admin/clients/:id/photos', authenticateAdmin, upload.array('photo
   if (!fs.existsSync(clientDir)) fs.mkdirSync(clientDir, { recursive: true });
 
   const maxOrderPhoto = await prisma.photo.findFirst({ where: { clientId: id }, orderBy: { order: 'desc' } });
-  let currentOrder = maxOrderPhoto ? maxOrderPhoto.order + 1 : 0;
+  let currentOrder = maxOrderPhoto ? (maxOrderPhoto?.order || 0) + 1 : 0;
 
   const uploadedPhotos = [];
   for (const file of files) {
@@ -169,7 +169,7 @@ app.post('/api/client/login', async (req: Request, res: Response) => {
   for (const client of clients) {
     if (await bcrypt.compare(password, client.password)) {
       const token = jwt.sign({ id: client.id, role: 'client' }, JWT_SECRET);
-      return res.json({ token, client: { id: client.id, title: client.title, subtitle: client.subtitle, date: client.date, accentColor: client.accentColor, backgroundColor: client.backgroundColor, fontFamily: client.fontFamily, musicUrl: client.musicUrl } });
+      return res.json({ token, client: { id: client.id, title: client.title, subtitle: client.subtitle, date: client.date, accentColor: client.accentColor, backgroundColor: client.backgroundColor, fontFamily: client.fontFamily } });
     }
   }
   res.status(401).json({ error: 'Invalid password' });
