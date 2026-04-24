@@ -25,7 +25,7 @@ export default function ClientLogin() {
         <p className="text-center text-sm mb-6 font-medium text-foreground-muted uppercase tracking-widest">Enter your password to access your gallery</p>
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className="brutalist-input text-center text-lg tracking-[0.2em]" />
+            <input type="password" autoComplete="current-password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className="brutalist-input text-center text-lg tracking-[0.2em]" />
           </div>
           <button type="submit" className="brutalist-button w-full">Enter Gallery</button>
         </form>

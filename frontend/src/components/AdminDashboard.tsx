@@ -72,7 +72,7 @@ export default function AdminDashboard() {
           <div className="flex gap-4 items-end">
             <div className="flex-1">
               <label className="brutalist-label">New Password</label>
-              <input type="password" value={newAdminPassword} onChange={e => setNewAdminPassword(e.target.value)} className="brutalist-input" />
+              <input type="password" autoComplete="new-password" value={newAdminPassword} onChange={e => setNewAdminPassword(e.target.value)} className="brutalist-input" />
             </div>
             <button onClick={handleChangePassword} className="brutalist-button">Update Password</button>
           </div>

@@ -30,7 +30,7 @@ export default function AdminLogin() {
           </div>
           <div>
             <label className="brutalist-label">Password</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="brutalist-input" />
+            <input type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} className="brutalist-input" />
           </div>
           <button type="submit" className="brutalist-button w-full">Login</button>
         </form>
