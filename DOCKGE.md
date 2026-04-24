@@ -40,12 +40,12 @@ services:
   backend:
     build: https://github.com/monomo71/moments.git#main:backend
     ports:
-      - "4001:4001"    
+      - "3001:3001"    
     volumes:
       - moments_uploads:/app/uploads
       - moments_db:/app/dev.db
     environment:
-      - PORT=4001
+      - PORT=3001
       - DATABASE_URL=file:/app/dev.db
       - JWT_SECRET=supersecret
 
