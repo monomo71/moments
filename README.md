@@ -50,7 +50,7 @@ npm run dev
 ### 4. Admin Access
 Open your browser and navigate to the frontend URL (e.g. \`${window.location.origin}/admin/login\`).
 - **Username:** `admin`
-- **Password:** `admin`
+- **Password:** `simagu`
 
 *Note: You can change the default credentials within the database or backend initialization logic.*
 
