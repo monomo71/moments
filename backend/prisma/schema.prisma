@@ -22,9 +22,20 @@ model Client {
   accentColor     String?
   backgroundColor String?
   fontFamily      String?  @default("Playfair Display")
+  bgImageUrl        String?
+  overlayColor      String?
+  overlayOpacity    Float?   @default(0.5)
+  titleColor        String?
+  subtitleColor     String?
+  dateColor         String?
+  btnLeftBgColor    String?
+  btnLeftTextColor  String?
+  btnRightBgColor   String?
+  btnRightTextColor String?
   headerFontFamily String?  @default("Playfair Display")
   headerColor      String?  @default("#ffffff")
   headerTextColor  String?  @default("#000000")
+  musicUrl         String?
 
   photos          Photo[]
   createdAt       DateTime @default(now())
@@ -35,6 +46,7 @@ model Photo {
   originalUrl String
   thumbnailUrl String
   clientId    String
+  order       Int      @default(0)
   client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
 }

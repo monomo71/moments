@@ -122,19 +122,51 @@ export default function ClientGallery() {
       />
       
       {mode === 'welcome' && (
-        <div className="min-h-screen flex items-center justify-center p-8 transition-colors duration-1000" style={{ backgroundColor: client.backgroundColor }}>
-          <div className="text-center max-w-2xl">
-            <h1 className="text-4xl md:text-6xl font-serif mb-4" style={{ color: client.accentColor, fontFamily: client.fontFamily }}>{client.title}</h1>
-            {client.subtitle && <h2 className="text-xl md:text-2xl font-serif text-foreground-muted mb-8 tracking-widest uppercase">{client.subtitle}</h2>}
-            {client.date && <p className="text-sm font-bold tracking-widest uppercase text-foreground-muted mb-12">{new Date(client.date).toLocaleDateString()}</p>}
+        <div className="min-h-screen flex items-center justify-center p-8 transition-colors duration-1000 relative" style={{ backgroundColor: client.backgroundColor }}>
+          {client.bgImageUrl && (
+             <div 
+               className="absolute inset-0 z-0 bg-cover bg-center" 
+               style={{ backgroundImage: `url(http://localhost:4001/${client.bgImageUrl})` }} 
+             />
+          )}
+          {client.bgImageUrl && client.overlayColor && (
+             <div 
+               className="absolute inset-0 z-0" 
+               style={{ backgroundColor: client.overlayColor, opacity: client.overlayOpacity }} 
+             />
+          )}
+          
+          <div className="text-center max-w-2xl relative z-10">
+            <h1 className="text-4xl md:text-6xl font-serif mb-4" style={{ color: client.titleColor || client.accentColor, fontFamily: client.fontFamily }}>{client.title}</h1>
+            {client.subtitle && <h2 className="text-xl md:text-2xl font-serif mb-8 tracking-widest uppercase" style={{ color: client.subtitleColor || 'currentColor' }}>{client.subtitle}</h2>}
+            {client.date && <p className="text-sm font-bold tracking-widest uppercase mb-12" style={{ color: client.dateColor || '#796e68' }}>{new Date(client.date).toLocaleDateString()}</p>}
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button onClick={() => setMode('gallery')} className="brutalist-button" style={{ backgroundColor: client.accentColor }}>{t.enterG}</button>
-              <button onClick={() => { 
-                setMode('slideshow'); 
-                setIsPlaying(true); 
-                if (audioRef.current) audioRef.current.play().catch(e => console.error("Audio block:", e)); 
-              }} className="brutalist-button-outline">{t.playS}</button>
+              <button 
+                onClick={() => setMode('gallery')} 
+                className="brutalist-button" 
+                style={{ 
+                    backgroundColor: client.btnLeftBgColor || client.accentColor, 
+                    color: client.btnLeftTextColor || '#ffffff' 
+                }}
+              >
+                {t.enterG}
+              </button>
+              <button 
+                onClick={() => { 
+                  setMode('slideshow'); 
+                  setIsPlaying(true); 
+                  if (audioRef.current) audioRef.current.play().catch(e => console.error("Audio block:", e)); 
+                }} 
+                className="brutalist-button-outline"
+                style={{ 
+                    borderColor: client.btnRightBgColor || '#e3e1e1',
+                    color: client.btnRightTextColor || 'currentColor',
+                    backgroundColor: client.btnRightBgColor ? 'transparent' : undefined
+                }}
+              >
+                {t.playS}
+              </button>
             </div>
           </div>
         </div>
@@ -186,7 +218,7 @@ export default function ClientGallery() {
               <nav className="sticky top-0 z-40 border-b border-border px-8 pt-4 pb-0 h-auto sm:h-16 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 box-border" style={{ backgroundColor: client.headerColor || '#ffffff', color: client.headerTextColor || '#000000', fontFamily: client.headerFontFamily || 'Playfair Display' }}>
                 <h1 className="text-xl cursor-pointer" style={{ fontFamily: client.headerFontFamily || 'Playfair Display' }} onClick={() => setMode('welcome')}>{client.title}</h1>
                 
-                <div className="flex flex-wrap items-center gap-4 text-[10px] tracking-widest font-bold uppercase mb-4 sm:mb-0">
+                <div className="flex flex-wrap items-center gap-4 text-sm font-medium mb-4 sm:mb-0" style={{ fontFamily: client.fontFamily || 'Inter' }}>
                   <div className="flex items-center gap-2 border-r border-[#e3e1e1] pr-4">
                     <Grid size={14}/>
                     <input type="range" min="150" max="600" value={thumbSize} onChange={e => setThumbSize(Number(e.target.value))} className="w-24 accent-taupe" />
@@ -194,12 +226,12 @@ export default function ClientGallery() {
                   
                   <button 
                     onClick={() => downloadZip(selected.size > 0 ? Array.from(selected) : undefined)} 
-                    className="flex items-center gap-2 text-foreground-muted hover:text-foreground transition-colors"
+                    className="flex items-center gap-2 text-foreground-muted hover:opacity-75 transition-opacity"
                   >
                     <Download size={14}/> {selected.size > 0 ? t.dlSel : t.dlAll}
                   </button>
                   
-                  <select value={lang} onChange={e => setLang(e.target.value as any)} className="bg-transparent border border-border p-1 rounded-none outline-none focus:ring-1 focus:border-taupe h-8">
+                  <select value={lang} onChange={e => setLang(e.target.value as any)} className="bg-transparent border border-border px-2 rounded-none outline-none focus:ring-1 focus:border-taupe h-8 uppercase font-bold text-xs tracking-widest ml-4">
                     <option value="nl">NL</option>
                     <option value="en">EN</option>
                     <option value="de">DE</option>

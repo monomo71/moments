@@ -26,8 +26,11 @@ export default function AdminClient() {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     title: '', subtitle: '', password: '', date: '', accentColor: '', backgroundColor: '', fontFamily: '',
-    headerColor: '', headerTextColor: '', headerFontFamily: ''
+    headerColor: '', headerTextColor: '', headerFontFamily: '',
+    overlayColor: '#000000', overlayOpacity: 0.5,
+    titleColor: '', subtitleColor: '', dateColor: '', btnLeftBgColor: '', btnLeftTextColor: '', btnRightBgColor: '', btnRightTextColor: ''
   });
+  const [uploadingBg, setUploadingBg] = useState(false);
 
   useEffect(() => {
     fetch(`http://localhost:4001/api/admin/clients`, {
@@ -46,7 +49,16 @@ export default function AdminClient() {
             fontFamily: c.fontFamily || 'Inter',
             headerColor: c.headerColor || '#e3e1e1',
             headerTextColor: c.headerTextColor || '#000000',
-            headerFontFamily: c.headerFontFamily || 'Playfair Display'
+            headerFontFamily: c.headerFontFamily || 'Playfair Display',
+            overlayColor: c.overlayColor || '#000000',
+            overlayOpacity: c.overlayOpacity ?? 0.5,
+            titleColor: c.titleColor || '',
+            subtitleColor: c.subtitleColor || '',
+            dateColor: c.dateColor || '',
+            btnLeftBgColor: c.btnLeftBgColor || '',
+            btnLeftTextColor: c.btnLeftTextColor || '',
+            btnRightBgColor: c.btnRightBgColor || '',
+            btnRightTextColor: c.btnRightTextColor || ''
           });
       }
     });
@@ -114,6 +126,33 @@ export default function AdminClient() {
       method: 'DELETE', headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
     });
     window.location.reload();
+  };
+
+  const handleBgUpload = async (e: any) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingBg(true);
+    const fd = new FormData();
+    fd.append('bgimage', file);
+    try {
+      const r = await fetch(`http://localhost:4001/api/admin/clients/${id}/bgimage`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` },
+        body: fd
+      });
+      const data = await r.json();
+      setClient({...client, bgImageUrl: data.bgImageUrl});
+    } finally {
+      setUploadingBg(false);
+    }
+  };
+
+  const handleBgRemove = async () => {
+    await fetch(`http://localhost:4001/api/admin/clients/${id}/bgimage`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+    });
+    setClient({...client, bgImageUrl: null});
   };
 
   const handleSaveEdit = async () => {
@@ -230,6 +269,70 @@ export default function AdminClient() {
                             ))}
                         </select>
                    </div>
+                </div>
+
+                <div className="col-span-1 space-y-4 pt-2 border-l border-[#e3e1e1] pl-6 md:col-span-2 md:ml-0 md:border-l-0 md:border-t md:pt-6">
+                    <h3 className="brutalist-label text-[#796e68]">Specific Element Colors (Optional override)</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div>
+                          <label className="brutalist-label text-[10px]">Title Color</label>
+                          <input type="color" value={editData.titleColor} onChange={e => setEditData({...editData, titleColor: e.target.value})} className="h-8 w-8 p-1 border border-[#e3e1e1] rounded-none cursor-pointer block mt-1" />
+                      </div>
+                      <div>
+                          <label className="brutalist-label text-[10px]">Subtitle Color</label>
+                          <input type="color" value={editData.subtitleColor} onChange={e => setEditData({...editData, subtitleColor: e.target.value})} className="h-8 w-8 p-1 border border-[#e3e1e1] rounded-none cursor-pointer block mt-1" />
+                      </div>
+                      <div>
+                          <label className="brutalist-label text-[10px]">Date Color</label>
+                          <input type="color" value={editData.dateColor} onChange={e => setEditData({...editData, dateColor: e.target.value})} className="h-8 w-8 p-1 border border-[#e3e1e1] rounded-none cursor-pointer block mt-1" />
+                      </div>
+                      <div>
+                          <label className="brutalist-label text-[10px]">Btn L Bg</label>
+                          <input type="color" value={editData.btnLeftBgColor} onChange={e => setEditData({...editData, btnLeftBgColor: e.target.value})} className="h-8 w-8 p-1 border border-[#e3e1e1] rounded-none cursor-pointer block mt-1" />
+                      </div>
+                      <div>
+                          <label className="brutalist-label text-[10px]">Btn L Text</label>
+                          <input type="color" value={editData.btnLeftTextColor} onChange={e => setEditData({...editData, btnLeftTextColor: e.target.value})} className="h-8 w-8 p-1 border border-[#e3e1e1] rounded-none cursor-pointer block mt-1" />
+                      </div>
+                      <div>
+                          <label className="brutalist-label text-[10px]">Btn R Bg</label>
+                          <input type="color" value={editData.btnRightBgColor} onChange={e => setEditData({...editData, btnRightBgColor: e.target.value})} className="h-8 w-8 p-1 border border-[#e3e1e1] rounded-none cursor-pointer block mt-1" />
+                      </div>
+                      <div>
+                          <label className="brutalist-label text-[10px]">Btn R Text</label>
+                          <input type="color" value={editData.btnRightTextColor} onChange={e => setEditData({...editData, btnRightTextColor: e.target.value})} className="h-8 w-8 p-1 border border-[#e3e1e1] rounded-none cursor-pointer block mt-1" />
+                      </div>
+                    </div>
+                </div>
+
+                <div className="col-span-1 md:col-span-2 border-t border-[#e3e1e1] pt-6 space-y-4">
+                  <h3 className="brutalist-label text-[#796e68]">Background Image (Welcome Screen)</h3>
+                  {client.bgImageUrl ? (
+                    <div className="flex flex-col gap-4">
+                      <div className="w-48 h-32 bg-gray-200 border border-[#e3e1e1] relative">
+                         <img src={`http://localhost:4001/${client.bgImageUrl}`} className="w-full h-full object-cover" />
+                      </div>
+                      <button onClick={handleBgRemove} className="brutalist-button-outline w-fit text-red-600 border-red-200">Remove Image</button>
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="brutalist-button w-fit inline-block cursor-pointer">
+                        {uploadingBg ? 'Uploading...' : 'Upload Background Image'}
+                        <input type="file" accept="image/*" className="hidden" onChange={handleBgUpload} />
+                      </label>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-6 mt-4">
+                      <div>
+                          <label className="brutalist-label text-[10px]">Overlay Color</label>
+                          <input type="color" value={editData.overlayColor} onChange={e => setEditData({...editData, overlayColor: e.target.value})} className="h-8 w-8 p-1 border border-[#e3e1e1] rounded-none cursor-pointer block mt-1" />
+                      </div>
+                      <div className="flex-1 max-w-sm">
+                          <label className="brutalist-label text-[10px]">Overlay Opacity: {Math.round(editData.overlayOpacity * 100)}%</label>
+                          <input type="range" min="0" max="1" step="0.05" value={editData.overlayOpacity} onChange={e => setEditData({...editData, overlayOpacity: parseFloat(e.target.value)})} className="w-full accent-taupe mt-3" />
+                      </div>
+                  </div>
                 </div>
 
             </div>
