@@ -34,7 +34,6 @@ Als je liever **alles via de webinterface van Dockge** wilt doen en geen zin heb
 Door aan te geven dat de `build` direct moet plaatsvinden vanuit GitHub (met `https://github...#main:mapnaam`), hoef je de bestanden niet handmatig op je server te hebben staan. Zorg wél voor de `volumes:` blocks, anders gaan je uploads verloren bij een update!
 
 ```yaml
-version: '3.8'
 
 services:
   backend:
