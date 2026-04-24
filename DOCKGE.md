@@ -43,10 +43,10 @@ services:
       - "3001:3001"    
     volumes:
       - moments_uploads:/app/uploads
-      - moments_db:/app/dev.db
+      - moments_db:/app/data
     environment:
       - PORT=3001
-      - DATABASE_URL=file:/app/dev.db
+      - DATABASE_URL=file:/app/data/dev.db
       - JWT_SECRET=supersecret
 
   frontend:
