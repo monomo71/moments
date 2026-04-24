@@ -87,7 +87,7 @@ app.post('/api/admin/clients', authenticateAdmin, async (req: Request, res: Resp
 });
 
 app.put('/api/admin/clients/:id', authenticateAdmin, async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   const { title, subtitle, date, password, accentColor, backgroundColor, fontFamily, headerColor, headerTextColor, headerFontFamily, bgImageUrl, overlayColor, overlayOpacity, titleColor, subtitleColor, dateColor, btnLeftBgColor, btnLeftTextColor, btnRightBgColor, btnRightTextColor } = req.body;
   const data: any = { title, subtitle, accentColor, backgroundColor, fontFamily, headerColor, headerTextColor, headerFontFamily, bgImageUrl, overlayColor, overlayOpacity: overlayOpacity !== undefined ? parseFloat(overlayOpacity) : undefined, titleColor, subtitleColor, dateColor, btnLeftBgColor, btnLeftTextColor, btnRightBgColor, btnRightTextColor };
   if (date) data.date = new Date(date);
@@ -98,12 +98,12 @@ app.put('/api/admin/clients/:id', authenticateAdmin, async (req: Request, res: R
 });
 
 app.delete('/api/admin/clients/:id', authenticateAdmin, async (req: Request, res: Response) => {
-  await prisma.client.delete({ where: { id: req.params.id } });
+  await prisma.client.delete({ where: { id: req.params.id as string } });
   res.json({ success: true });
 });
 
 app.post('/api/admin/clients/:id/photos', authenticateAdmin, upload.array('photos'), async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   const files = req.files as Express.Multer.File[];
   
   const clientDir = path.join(uploadsDir, id);
@@ -152,13 +152,13 @@ app.put('/api/admin/clients/:id/photos/reorder', authenticateAdmin, async (req: 
 });
 
 app.delete('/api/admin/photos/:id', authenticateAdmin, async (req: Request, res: Response) => {
-  const photo = await prisma.photo.findUnique({ where: { id: req.params.id } });
+  const photo = await prisma.photo.findUnique({ where: { id: req.params.id as string } });
   if (photo) {
     try {
       fs.unlinkSync(path.join(import.meta.dirname, '../../', photo.originalUrl));
       fs.unlinkSync(path.join(import.meta.dirname, '../../', photo.thumbnailUrl));
     } catch(e) {}
-    await prisma.photo.delete({ where: { id: req.params.id } });
+    await prisma.photo.delete({ where: { id: req.params.id as string } });
   }
   res.json({ success: true });
 });
@@ -225,7 +225,7 @@ app.listen(PORT, () => {
 });
 
 app.post('/api/admin/clients/:id/music', authenticateAdmin, upload.single('music'), async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   const file = req.file;
   if (!file) return res.status(400).json({ error: 'No file uploaded' });
 
@@ -247,7 +247,7 @@ app.post('/api/admin/clients/:id/music', authenticateAdmin, upload.single('music
 });
 
 app.delete('/api/admin/clients/:id/music', authenticateAdmin, async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   await prisma.client.update({
     where: { id },
     data: { musicUrl: null }
@@ -256,7 +256,7 @@ app.delete('/api/admin/clients/:id/music', authenticateAdmin, async (req: Reques
 });
 
 app.post('/api/admin/clients/:id/bgimage', authenticateAdmin, upload.single('bgimage'), async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   const file = req.file;
   if (!file) return res.status(400).json({ error: 'No file' });
 
@@ -278,7 +278,7 @@ app.post('/api/admin/clients/:id/bgimage', authenticateAdmin, upload.single('bgi
 });
 
 app.delete('/api/admin/clients/:id/bgimage', authenticateAdmin, async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   await prisma.client.update({
     where: { id },
     data: { bgImageUrl: null }
